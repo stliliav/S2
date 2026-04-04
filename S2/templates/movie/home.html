@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Trirong">
+    <meta charset="UTF-8">
+    <title>Posts</title>
+</head>
+<body>
+    <a href="{{ url_for('user_detail', uid=current_user.id) if current_user.is_authenticated else url_for('signin') }}">
+    <img src="{{ url_for('static', filename='images/pfp.png') }}"
+         alt="Account"
+         width="100"
+         height="auto"
+         style="position: relative; left: 1400px; float: left">
+    </a>
+
+    <a href="{{ url_for('create_movie') }}" style="font-family: 'Trirong', serif; font-size: 30px; color: rgb(111, 60, 2); text-align: justify">Upload a new movie!</a>
+    <br>
+    <br>
+    <br>
+
+{% for movie in movies %}
+    <div style="width: auto; height:270px">
+        {% if movie.image %}
+            <img src="{{ url_for('static', filename=movie.image.image_path) }}" alt="Movie poster" width="220" height="220" style="position: relative; bottom: 1px; left: 40px; border-radius: 25px; float: left; margin-right: 65px; border: 3px solid black">
+        {% endif %}
+
+        <a href="{{ url_for('movie_detail', mid=movie.id) }}">
+            <p style = "font-size: 38px; color: rgb(0,0,0)">{{ movie.title }}</p>
+        </a>
+        <p style="font-size: 25px; font-family: 'Monaco', monospace">{{movie.country}}, {{movie.year}}</p>
+
+        <div>
+            {% for genre in movie.genres %}
+                <span style="font-size: 25px; color: rgb(161, 161, 161); font-family: 'Monaco', monospace">{{ genre.name }}</span>
+            {% endfor %}
+        </div>
+
+        <p style = "font-size: 20px; color: rgb(161, 161, 161)">Post author: {{ movie.profile.name }} </p>
+
+
+    </div>
+{% endfor %}
+
+</body>
+</html>
+

@@ -1,0 +1,17 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Users</title>
+</head>
+<body>
+
+<!--df user -->
+<ul>
+    {% for profile in profiles %}
+        <li>Username is <strong>{{ profile.user.username }}</strong>. Age is {{ profile.age }}</li>
+    {% endfor %}
+</ul>
+
+</body>
+</html>

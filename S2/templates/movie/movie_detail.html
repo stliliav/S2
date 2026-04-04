@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <title>{{ movie.title }}</title>
+</head>
+<body>
+
+
+    <h1>{{ movie.title }}</h1>
+    <h2>{{movie.country}}, {{movie.year}}</h2>
+    {% if movie.image %}
+        <img src="{{ url_for('static', filename=movie.image.image_path) }}" alt="Movie poster" width="45" height="auto" style="float: left; margin: 15px;">
+    {% endif %}
+    <p>Post author: {{ movie.profile.name }}</p>
+    <hr>
+
+    {% if current_user.is_authenticated and movie.profile_id == current_user.profile.id %}
+        <div>
+            <a href= "{{ url_for('edit_movie', mid=movie.id)}}">
+                <button type="button">Edit post</button>
+            </a>
+
+            <form action="{{ url_for('delete_movie', mid=movie.id) }}" method="post" style="display:inline;">
+                <input type="submit" value="Delete post" onclick="return confirm('Are you sure?');">
+            </form>
+        </div>
+        <hr>
+    {% endif %}
+
+    <h3>Comments:</h3>
+    <ul>
+        {% for comment in movie.comments %}
+            <li>[{{comment.created_at}}] {{ comment.profile.name }}: {{ comment.text }}</li>
+        {% else %}
+            <li>No comments...</li>
+        {% endfor %}
+
+        <a href="{{ url_for('create_comment', mid = movie.id) }}">Write a new comment</a>
+
+    </ul>
+
+    <br>
+    <a href="{{ url_for('home') }}">Back</a>
+
+</body>
+</html>

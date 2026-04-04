@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ title }}</title>
+</head>
+<body>
+
+    <h2>{{ title }}</h2>
+
+    <form action="" method="post" enctype="multipart/form-data">
+        {{ form.hidden_tag() }}
+
+        <div>
+            {{ form.title.label }}<br>
+            {{ form.title() }}
+            {% for error in form.title.errors %}
+                <div>Error: {{ error }}</div>
+            {% endfor %}
+        </div>
+
+        <div>
+            {{ form.country.label }}<br>
+            {{ form.country() }}
+            {% for error in form.title.errors %}
+                <div>Error: {{ error }}</div>
+            {% endfor %}
+        </div>
+
+        <div>
+            {{ form.year.label }}<br>
+            {{ form.year() }}
+
+            {% for error in form.genres.errors %}
+                <div>Error: {{ error }}</div>
+            {% endfor %}
+        </div>
+
+        <div>
+            {{ form.genres.label }}<br>
+            {{ form.genres() }}
+
+            {% for error in form.genres.errors %}
+                <div>Error: {{ error }}</div>
+            {% endfor %}
+        </div>
+
+        <div>
+            {{ form.img.label }}<br>
+            {{ form.img() }}
+
+            {% for error in form.img.errors %}
+                <div>Error: {{ error }}</div>
+            {% endfor %}
+        </div>
+        <br>
+        <div>
+            {{ form.submit() }}
+        </div>
+    </form>
+
+    <br>
+    <a href="{{ url_for('home') }}">Back to the post list</a>
+
+</body>
+</html>

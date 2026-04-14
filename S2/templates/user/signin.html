@@ -2,7 +2,12 @@
 
 <form method="post">
     {{ form.hidden_tag() }}
+
+    {% block content %}
     {{ render_field(form.username, placeholder="Your username") }}
     {{ render_field(form.password, placeholder="Your password") }}
+    {% endblock %}
+
     {{ form.submit }}
+
 </form>

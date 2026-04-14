@@ -213,10 +213,11 @@ class MoviesDetailView(MethodView):
     def get(self, mid):
         movie = db.session.get(Movie, mid) or abort(404)
         has_voted = False
+        form = MovieForm(obj=movie)
         if current_user.is_authenticated:
             stmt = select(Rating).where(Rating.user_id == current_user.id, Rating.movie_id == mid)
             has_voted = db.session.execute(stmt).scalar_one_or_none() is not None
-        return render_template("movie/movie_detail.html", movie=movie, has_voted=has_voted)
+        return render_template("movie/movie_detail.html", movie=movie, has_voted=has_voted, form = form)
 app.add_url_rule('/movie/<int:mid>', view_func=MoviesDetailView.as_view('movie_detail'))
 
 class CommentsDetailView(MethodView):
@@ -236,15 +237,15 @@ class UserDetailView(MethodView):
         user = db.session.execute(stmt).scalar_one_or_none()
         if user is None:
             return redirect(url_for("signup"))
-        return render_template("user_detail.html", user=user)
+        return render_template("profile/user_detail.html", user=user)
 app.add_url_rule('/user/<int:uid>', view_func=UserDetailView.as_view('user_detail'))
 
-class ProfileListView(MethodView):
-    def get(self):
-        stmt = select(Profile).order_by(Profile.age.desc())
-        profiles = db.session.execute(stmt).scalars().all()
-        return render_template('profile_list.html', profiles=profiles)
-app.add_url_rule('/profiles', view_func=ProfileListView.as_view('profile_list'))
+# class ProfileListView(MethodView):
+#     def get(self):
+#         stmt = select(Profile).order_by(Profile.age.desc())
+#         profiles = db.session.execute(stmt).scalars().all()
+#         return render_template('profile_list.html', profiles=profiles)
+# app.add_url_rule('/profiles', view_func=ProfileListView.as_view('profile_list'))
 
 class LogOutView(MethodView):
     def get(self):
@@ -421,7 +422,7 @@ class EditCommentView(MethodView):
         form = CommentForm(obj=comment)
         if comment.profile_id != current_user.profile.id:
             abort(403)
-        return render_template('comment/comment_form.html', form=form, title="Edit comment")
+        return render_template('comment/comment_form.html', form=form, title="Edit comment", cid = comment.id)
 
     def post(self, cid):
         comment = db.session.get(Comment, cid) or abort(404)
@@ -433,19 +434,20 @@ class EditCommentView(MethodView):
             comment.text = form.text.data
             db.session.commit()
             return redirect(url_for('movie_detail', mid=mid))
-        return render_template('comment/comment_form.html', form=form, title="Edit comment")
+        return render_template('comment/comment_form.html', form=form, title="Edit comment", cid = comment.id)
 app.add_url_rule('/comment/edit/<int:cid>', view_func=EditCommentView.as_view('edit_comment'))
 
 class DeleteCommentView(MethodView):
     decorators = [login_required]
     def post(self, cid):
         comment = db.session.get(Comment, cid) or abort(404)
+        mid = comment.movie_id
         if comment.profile_id != current_user.profile.id:
             abort(403)
         db.session.delete(comment)
         db.session.commit()
         flash('Comment deleted', 'warning')
-        return redirect(url_for('home'))
+        return redirect(url_for('movie_detail', mid = mid))
 app.add_url_rule('/comment/delete/<int:cid>', view_func=DeleteCommentView.as_view('delete_comment'))
 
 #__________________________________________________________________________________________________
@@ -479,7 +481,7 @@ class EditUsernameView(MethodView):
         user = db.session.execute(stmt).scalar_one_or_none()
         if user.profile.id != current_user.profile.id:
             abort(403)
-        return render_template('name_form.html', form=UsernameForm(obj=user), title="Edit username")
+        return render_template('profile/name_form.html', form=UsernameForm(obj=user), title="Edit username")
 
     def post(self,uid):
         stmt = select(User).where(User.id == uid)
@@ -490,9 +492,9 @@ class EditUsernameView(MethodView):
         if form.validate_on_submit():
             user.username = form.username.data
             db.session.commit()
-            return redirect(url_for('user_detail', uid=uid))
-        return render_template('name_form.html', form=form, title="Edit username")
-app.add_url_rule('/user/edit/<int:uid>', view_func=EditUsernameView.as_view('edit_username'))
+            return redirect(url_for('profile/user_detail', user = current_user))
+        return render_template('profile/name_form.html', form=form, title="Edit username")
+app.add_url_rule('/user/name/<int:uid>', view_func=EditUsernameView.as_view('edit_username'))
 
 class EditEmailView(MethodView):
     decorators = [login_required]
@@ -501,7 +503,7 @@ class EditEmailView(MethodView):
         user = db.session.get(User, uid) or abort(404)
         if user.profile.id != current_user.profile.id:
             abort(403)
-        return render_template('email_form.html', form=UserEmailForm(obj=user), title="Edit email")
+        return render_template('profile/email_form.html', form=UserEmailForm(obj=user), title="Edit email")
 
     def post(self):
         uid = current_user.id
@@ -512,8 +514,8 @@ class EditEmailView(MethodView):
         if form.validate_on_submit():
             user.email = form.email.data
             db.session.commit()
-            return redirect(url_for('user_detail', uid=uid))
-        return render_template('email_form.html', form=form, title="Edit email")
+            return redirect(url_for('profile/user_detail', user = current_user))
+        return render_template('profile/email_form.html', form=form, title="Edit email")
 app.add_url_rule('/user/email/<int:uid>', view_func=EditEmailView.as_view('edit_email'))
 
 class EditPasswordView(MethodView):
@@ -523,7 +525,7 @@ class EditPasswordView(MethodView):
         user = db.session.get(User, uid) or abort(404)
         if user.profile.id != current_user.profile.id:
             abort(403)
-        return render_template('password_form.html', form=PasswordForm(obj=user), title="Edit password")
+        return render_template('profile/password_form.html', form=PasswordForm(obj=user), title="Edit password")
 
     def post(self):
         uid = current_user.id
@@ -534,8 +536,8 @@ class EditPasswordView(MethodView):
         if form.validate_on_submit():
             user.set_password(form.password.data)
             db.session.commit()
-            return redirect(url_for('user_detail', uid=uid))
-        return render_template('password_form.html', form=form, title="Edit password")
+            return redirect(url_for('profile/user_detail', user = current_user))
+        return render_template('profile/password_form.html', form=form, title="Edit password")
 app.add_url_rule('/user/password/<int:uid>', view_func=EditPasswordView.as_view('edit_password'))
 
 def create_db():

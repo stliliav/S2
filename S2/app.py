@@ -61,8 +61,10 @@ class Movie(db.Model):
     genres: Mapped[List["Genres"]] = relationship(secondary = movies_genres, back_populates = "movies")
     year: Mapped[int] = mapped_column(db.Integer)
     country: Mapped[str] = mapped_column(db.String(50))
-    rate: Mapped[int] = mapped_column(db.Integer)
     image: Mapped["Image"] = relationship(backref="movie", uselist=False, cascade="all, delete-orphan")
+    rate: Mapped[float] = mapped_column(db.Float, default=0.0)
+    ratings_list: Mapped[List["Rating"]] = relationship(back_populates="movie", cascade="all, delete-orphan")
+
 
 class Comment(db.Model):
     __tablename__ = "comments"
@@ -88,6 +90,15 @@ class Image(db.Model):
     movie_id: Mapped[int] = mapped_column(ForeignKey('movies.id'))
     #будет чт то типо "images/photo1.jpg"
     image_path = db.Column(db.String(100), nullable=False)
+
+
+class Rating(db.Model):
+    __tablename__ = 'ratings'
+    id: Mapped[int] = mapped_column(db.Integer, primary_key=True)
+    value: Mapped[int] = mapped_column(db.Integer)
+    user_id: Mapped[int] = mapped_column(ForeignKey('users.id'))
+    movie_id: Mapped[int] = mapped_column(ForeignKey('movies.id'))
+    movie: Mapped["Movie"] = relationship(back_populates="ratings_list")
 
 @login.user_loader
 def load_user(user_id):
@@ -152,6 +163,44 @@ class UserSignInView(MethodView):
 app.add_url_rule("/signin", view_func=UserSignInView.as_view('signin'))
 
 #________________________________________________________________________
+class RateView(MethodView):
+    decorators = [login_required]
+
+    def get(self, mid):
+        return redirect(url_for('movie_detail', mid=mid))
+
+    def post(self, mid):
+        choice = request.form.get('rates')
+        if not choice:
+            return redirect(url_for('movie_detail', mid=mid))
+
+        stmt = select(Rating).where(Rating.user_id == current_user.id, Rating.movie_id == mid)
+        existing_rating = db.session.execute(stmt).scalar_one_or_none()
+
+        if existing_rating:
+            existing_rating.value = int(choice)
+            flash('Your rate is updated!', 'info')
+        else:
+            new_rate = Rating(
+                value=int(choice),
+                user_id=current_user.id,
+                movie_id=mid
+            )
+            db.session.add(new_rate)
+            flash('Rate is saved! We appreciate your opinion!', 'success')
+
+        db.session.commit()
+        self.update_movie_average(mid)
+
+        return redirect(url_for('movie_detail', mid=mid))
+
+    def update_movie_average(self, mid):
+        avg_rating = db.session.query(func.avg(Rating.value)).filter(Rating.movie_id == mid).scalar()
+        movie = db.session.get(Movie, mid)
+        if movie:
+            movie.rate = round(float(avg_rating), 1) if avg_rating else 0.0
+            db.session.commit()
+app.add_url_rule('/movie/rating/<int:mid>', view_func=RateView.as_view('ratings'))
 
 class MovieListView(MethodView):
     def get(self):
@@ -162,29 +211,32 @@ app.add_url_rule('/', view_func=MovieListView.as_view('home'))
 
 class MoviesDetailView(MethodView):
     def get(self, mid):
-        stmt = select(Movie).where(Movie.id == mid)
-        movie = db.session.execute(stmt).scalar_one_or_none()
-        if movie is None:
-            abort(404)
-        return render_template("movie/movie_detail.html", movie=movie)
+        movie = db.session.get(Movie, mid) or abort(404)
+        has_voted = False
+        if current_user.is_authenticated:
+            stmt = select(Rating).where(Rating.user_id == current_user.id, Rating.movie_id == mid)
+            has_voted = db.session.execute(stmt).scalar_one_or_none() is not None
+        return render_template("movie/movie_detail.html", movie=movie, has_voted=has_voted)
 app.add_url_rule('/movie/<int:mid>', view_func=MoviesDetailView.as_view('movie_detail'))
 
+class CommentsDetailView(MethodView):
+    def get(self, cid):
+        comment = db.session.get(Comment, cid) or abort(404)
+        form = CommentForm(obj=comment)
+        return render_template("comment/comment_form.html", cid = comment.id, form=form)
+app.add_url_rule('/comment/<int:cid>', view_func=CommentsDetailView.as_view('comment_detail'))
 
 class UserDetailView(MethodView):
     def get(self, uid):
         if not current_user.is_authenticated:
             return redirect(url_for("signin"))
-
         if uid != current_user.id:
             return redirect(url_for("signin"))
-
         stmt = select(User).where(User.id == uid)
         user = db.session.execute(stmt).scalar_one_or_none()
         if user is None:
             return redirect(url_for("signup"))
         return render_template("user_detail.html", user=user)
-
-
 app.add_url_rule('/user/<int:uid>', view_func=UserDetailView.as_view('user_detail'))
 
 class ProfileListView(MethodView):
@@ -364,21 +416,23 @@ app.add_url_rule('/movie/<int:mid>/comment/new', view_func=CreateCommentView.as_
 
 class EditCommentView(MethodView):
     decorators = [login_required]
-    def get(self, cid): #cid - айдишник нужного комента
+    def get(self, cid):
         comment = db.session.get(Comment, cid) or abort(404)
+        form = CommentForm(obj=comment)
         if comment.profile_id != current_user.profile.id:
             abort(403)
-        return render_template('comment/comment_form.html', form=CommentForm(obj=comment), title="Edit comment")
+        return render_template('comment/comment_form.html', form=form, title="Edit comment")
 
     def post(self, cid):
         comment = db.session.get(Comment, cid) or abort(404)
         if comment.profile_id != current_user.profile.id:
             abort(403)
+        mid = comment.movie_id
         form = CommentForm()
         if form.validate_on_submit():
             comment.text = form.text.data
             db.session.commit()
-            return redirect(url_for('comment_detail', cid=comment.id))
+            return redirect(url_for('movie_detail', mid=mid))
         return render_template('comment/comment_form.html', form=form, title="Edit comment")
 app.add_url_rule('/comment/edit/<int:cid>', view_func=EditCommentView.as_view('edit_comment'))
 

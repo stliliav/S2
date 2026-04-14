@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:margin-top="http://www.w3.org/1999/xhtml" xmlns:margin-bottom="http://www.w3.org/1999/xhtml"
+      xmlns:line-height="http://www.w3.org/1999/xhtml">
+<head>
+    <meta charset="UTF-8">
+    <title>Profile</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit&display=swap" rel="stylesheet">
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Serif:ital,wght@0,100..900;1,100..900&display=swap" rel="stylesheet">
+
+</head>
+<body>
+    <img src="{{ url_for('static', filename='images/pfp.png') }}"
+         alt="Account"
+         width="250"
+         height="auto"
+         style="position: relative; left: 0px; float: left">
+
+    <span line-height: 0.5; style="position: relative; left: 80px; font-family: 'Outfit', sans-serif; font-weight: 400; font-size: 90px; color:rgb(85, 201, 46)">{{user.profile.name}}</span>
+    <br>
+    <span line-height: 0.5; style="position: relative; left: 80px; font-family: 'Noto Serif', serif; font-weight: 200; font-size: 32px; color: rgb(84, 84, 84); text-align: justify">@{{user.username}}</span>
+</body>
+</html>

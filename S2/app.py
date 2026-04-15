@@ -407,12 +407,11 @@ class CreateCommentView(MethodView):
         form = CommentForm()
         movie = db.session.get(Movie, mid) or abort(404)
         if form.validate_on_submit():
-
             db.session.add(Comment(text = form.text.data, profile=current_user.profile, movie_id = mid))
             db.session.commit()
             flash('Comment posted!', 'success')
             return redirect(url_for('movie_detail', mid=mid))
-        return render_template('comment/comment_form.html', form=form, title="New comment")
+        return render_template('comment/comment_form.html', movie = movie, form=form, title="New comment")
 app.add_url_rule('/movie/<int:mid>/comment/new', view_func=CreateCommentView.as_view('create_comment'))
 
 class EditCommentView(MethodView):
@@ -422,7 +421,7 @@ class EditCommentView(MethodView):
         form = CommentForm(obj=comment)
         if comment.profile_id != current_user.profile.id:
             abort(403)
-        return render_template('comment/comment_form.html', form=form, title="Edit comment", cid = comment.id)
+        return render_template('comment/comment_info.html', form=form, title="Edit comment", cid = comment.id, mid = comment.movie_id)
 
     def post(self, cid):
         comment = db.session.get(Comment, cid) or abort(404)
@@ -434,7 +433,7 @@ class EditCommentView(MethodView):
             comment.text = form.text.data
             db.session.commit()
             return redirect(url_for('movie_detail', mid=mid))
-        return render_template('comment/comment_form.html', form=form, title="Edit comment", cid = comment.id)
+        return render_template('comment/comment_info.html', form=form, title="Edit comment", cid = comment.id, mid = comment.movie_id)
 app.add_url_rule('/comment/edit/<int:cid>', view_func=EditCommentView.as_view('edit_comment'))
 
 class DeleteCommentView(MethodView):
@@ -547,4 +546,5 @@ def create_db():
 if __name__ == '__main__':
     create_db()
     app.run(port= 7777, debug=True, use_reloader=False)
+
 

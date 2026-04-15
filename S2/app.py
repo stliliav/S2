@@ -498,15 +498,15 @@ app.add_url_rule('/user/name/<int:uid>', view_func=EditUsernameView.as_view('edi
 
 class EditEmailView(MethodView):
     decorators = [login_required]
-    def get(self):
+    def get(self, uid):
         uid = current_user.id
         user = db.session.get(User, uid) or abort(404)
         if user.profile.id != current_user.profile.id:
             abort(403)
         return render_template('profile/email_form.html', form=UserEmailForm(obj=user), title="Edit email")
 
-    def post(self):
-        uid = current_user.id
+    def post(self, uid):
+        #uid = current_user.id
         user = db.session.get(Comment, uid) or abort(404)
         if user.profile.id != current_user.profile.id:
             abort(403)
@@ -520,14 +520,14 @@ app.add_url_rule('/user/email/<int:uid>', view_func=EditEmailView.as_view('edit_
 
 class EditPasswordView(MethodView):
     decorators = [login_required]
-    def get(self):
-        uid = current_user.id
+    def get(self, uid):
+        # uid = current_user.id
         user = db.session.get(User, uid) or abort(404)
         if user.profile.id != current_user.profile.id:
             abort(403)
         return render_template('profile/password_form.html', form=PasswordForm(obj=user), title="Edit password")
 
-    def post(self):
+    def post(self, uid):
         uid = current_user.id
         user = db.session.get(Comment, uid) or abort(404)
         if user.profile.id != current_user.profile.id:

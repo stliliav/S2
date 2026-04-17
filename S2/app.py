@@ -549,7 +549,7 @@ class MovieListResource(Resource):
 			movies = [
 				{"id": movie.id,
 				 "title": movie.title,
-				 "url": app.url_for("movie_detail", mid=movie.id, movie=movie)}
+				 "url": app.url_for("movie_detail", mid=movie.id, movie=movie, _external=True)}
 				for movie in db.session.execute(stmt).scalars().all()]
 			return movies
 api.add_resource(MovieListResource, '/api/movies')

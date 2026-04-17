@@ -4,9 +4,10 @@ from datetime import datetime
 from typing import List
 
 from flask import Flask, render_template, flash, redirect, url_for, abort, request
-from flask.views import MethodView
 from flask_login import LoginManager, UserMixin, login_user, login_required, current_user, logout_user
+from flask_restful import Api, Resource
 from flask_sqlalchemy import SQLAlchemy
+from flask.views import MethodView
 from flask_wtf import FlaskForm, form
 
 from sqlalchemy import ForeignKey, DateTime, func, select
@@ -18,6 +19,7 @@ from wtforms.validators import DataRequired, EqualTo, ValidationError
 app = Flask(__name__)
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///db.sqlite3'
 app.secret_key = 'rhfiwehfwhfwehfnoehfwef'
+api = Api(app)
 db = SQLAlchemy(app)
 login = LoginManager(app)
 login.login_view = 'signin'
@@ -539,6 +541,44 @@ class EditPasswordView(MethodView):
         return render_template('profile/password_form.html', form=form, title="Edit password")
 app.add_url_rule('/user/password/<int:uid>', view_func=EditPasswordView.as_view('edit_password'))
 
+#_____________________________________________ResourceAPI_______________________________________________________________
+class MovieListResource(Resource):
+	def get(self):
+		with app.app_context():
+			stmt = select(Movie)
+			movies = [
+				{"id": movie.id,
+				 "title": movie.title,
+				 "url": app.url_for("movie_detail", mid=movie.id, movie=movie)}
+				for movie in db.session.execute(stmt).scalars().all()]
+			return movies
+api.add_resource(MovieListResource, '/api/movies')
+
+class CommentListResource(Resource):
+	def get(self):
+		with app.app_context():
+			stmt = select(Comment)
+			comments = [
+				{"movie_id": comment.movie_id,
+				 "id": comment.id,
+				 "text": comment.text}
+				for comment in db.session.execute(stmt).scalars().all()]
+			return comments
+api.add_resource(CommentListResource, '/api/comments')
+
+class UserListResource(Resource):
+	def get(self):
+		with app.app_context():
+			stmt = select(User)
+			users = [
+				{"id": user.id,
+				 "name": user.username,
+                 "email": user.email}
+				for user in db.session.execute(stmt).scalars().all()]
+			return users
+api.add_resource(UserListResource, '/api/users')
+
+
 def create_db():
     with app.app_context():
         db.create_all()
@@ -546,5 +586,4 @@ def create_db():
 if __name__ == '__main__':
     create_db()
     app.run(port= 7777, debug=True, use_reloader=False)
-
 

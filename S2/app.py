@@ -3,12 +3,21 @@ from config import Config
 from extensions import db, login_manager
 from models import create_db
 
-from views import (
-    UserSignUpView, UserSignInView, RateView, MovieListView, MoviesDetailView,
-    CommentsDetailView, UserDetailView, CreateMovieView, EditMovieView, DeleteMovieView,
-    CreateCommentView, EditCommentView, DeleteCommentView, EditUsernameView,
-    EditEmailView, EditPasswordView, LogOutView
+from user.views import (
+    UserSignUpView, UserSignInView, UserDetailView,
+     EditUsernameView, EditEmailView, EditPasswordView, LogOutView
 )
+
+from movie.views import (
+	RateView, MovieListView, MoviesDetailView,
+	CreateMovieView, EditMovieView, DeleteMovieView
+)
+
+from comment.views import (
+	CommentsDetailView,CreateCommentView,
+	EditCommentView, DeleteCommentView
+)
+
 from resources import initialize_routes
 from flask_restful import Api
 

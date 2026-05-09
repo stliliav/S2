@@ -97,7 +97,7 @@ class EditUsernameView(MethodView):
         if form.validate_on_submit():
             user.username = form.username.data
             self.engine.session.commit()
-            return redirect(url_for('profile/user_detail', user = current_user))
+            return redirect(url_for('user_detail', uid=user.id))
         return render_template('profile/name_form.html', form=form, title="Edit username")
 
 class EditEmailView(MethodView):
@@ -116,14 +116,14 @@ class EditEmailView(MethodView):
 
     def post(self, uid):
         #uid = current_user.id
-        user = self.engine.session.get(Comment, uid) or abort(404)
+        user = self.engine.session.get(User, uid) or abort(404)
         if user.profile.id != current_user.profile.id:
             abort(403)
         form = UserEmailForm()
         if form.validate_on_submit():
             user.email = form.email.data
             self.engine.session.commit()
-            return redirect(url_for('profile/user_detail', user = current_user))
+            return redirect(url_for('user_detail', uid=user.id))
         return render_template('profile/email_form.html', form=form, title="Edit email")
 
 class EditPasswordView(MethodView):
@@ -141,14 +141,14 @@ class EditPasswordView(MethodView):
 
     def post(self, uid):
         uid = current_user.id
-        user = self.engine.session.get(Comment, uid) or abort(404)
+        user = self.engine.session.get(User, uid) or abort(404)
         if user.profile.id != current_user.profile.id:
             abort(403)
         form = PasswordForm()
         if form.validate_on_submit():
             user.set_password(form.password.data)
             self.engine.session.commit()
-            return redirect(url_for('profile/user_detail', user = current_user))
+            return redirect(url_for('user_detail', uid=user.id))
         return render_template('profile/password_form.html', form=form, title="Edit password")
 
 class LogOutView(MethodView):

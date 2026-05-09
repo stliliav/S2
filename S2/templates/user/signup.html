@@ -1,21 +1,13 @@
-{% from "_helpers.html" import render_field %}
 {% extends "user/signin.html" %}
 
-<form method="post">
-    {{ form.hidden_tag() }}
+{% block content %}
+    <a href="{{ url_for('signin') }}"> Already have an account? Sign in! </a>
 
-    {% block content %}
-    {{ render_field(form.name, placeholder="Your name") }}
-    {{ render_field(form.email, placeholder="Your email")}}
-    {{ render_field(form.age, placeholder="Your age")}}
+    {{ render_field(form.name, placeholder="Name") }}
+    {{ render_field(form.email, placeholder="Email") }}
+    {{ render_field(form.age, placeholder="Age") }}
 
     {{ super() }}
 
-    {{ render_field(form.password2, placeholder="Repeat your password") }}
-
-    {% endblock %}
-
-    <br>
-    <a href = "{{url_for('signin')}}"> Already have an account? Sign in! </a>
-
-</form>
+    {{ render_field(form.password2, placeholder="Repeat password") }}
+{% endblock %}

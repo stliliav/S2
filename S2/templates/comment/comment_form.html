@@ -1,19 +1,36 @@
-<body>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Trirong">
+<style>
+    .comment-area {
+        font-family: 'Trirong', serif !important;
+        font-size: 18px !important;
+        color: rgb(111, 60, 2) !important;
+        border: 2px solid green !important;
+        border-radius: 8px !important;
+        padding: 10px !important;
+        width: 100%;
+        min-height: 100px;
+        box-sizing: border-box;
+    }
+    .submit-btn {
+        font-family: 'Trirong', serif !important;
+        background-color: green;
+        color: white;
+        border: none;
+        padding: 10px 20px;
+        border-radius: 8px;
+        cursor: pointer;
+        margin-top: 10px;
+        font-size: 18px;
+    }
+    .form-center { text-align: center; max-width: 500px; margin: 0 auto; }
+</style>
+
+<div class="form-center">
     {% block content %}
     <form action="" method="post">
         {{ form.hidden_tag() }}
-        <div>
-            {{ form.text.label }}<br>
-            {{ form.text() }}
-
-            {% for error in form.text.errors %}
-                <div>Error: {{ error }}</div>
-            {% endfor %}
-        </div>
-        <br>
-        <div>
-            {{ form.submit() }}
-        </div>
+        {{ form.text(class="comment-area", placeholder="Input your comment") }}
+        {{ form.submit(class="submit-btn") }}
     </form>
     {% endblock %}
-</body>
+</div>

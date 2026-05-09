@@ -3,15 +3,15 @@
 <head>
     <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Trirong">
     <meta charset="UTF-8">
-    <title>Posts</title>
+    <title>Movies</title>
 </head>
 <body>
-    <a href="{{ url_for('user_detail', uid=current_user.id) if current_user.is_authenticated else url_for('signin') }}">
+    <a href="{{ url_for('user_detail', uid=current_user.id) if current_user.is_authenticated else url_for('signup') }}">
     <img src="{{ url_for('static', filename='images/pfp.png') }}"
          alt="Account"
          width="100"
          height="auto"
-         style="position: relative; left: 1400px; float: left">
+         style="position: relative; left: 1350px; float: left">
     </a>
 
     <a href="{{ url_for('create_movie') }}" style="font-family: 'Trirong', serif; font-size: 30px; color: rgb(111, 60, 2); text-align: justify">Upload a new movie!</a>
@@ -26,7 +26,7 @@
         {% endif %}
 
         <a href="{{ url_for('movie_detail', mid=movie.id) }}">
-            <p style = "font-size: 38px; color: rgb(0,0,0)">{{ movie.title }}</p>
+            <p style = "font-size: 38px; color: rgb(0,0,0)">{{ movie.title }}             {{movie.rate}}&#9733;</p>
         </a>
         <p style="font-size: 25px; font-family: 'Monaco', monospace">{{movie.country}}, {{movie.year}}</p>
 

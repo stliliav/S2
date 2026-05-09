@@ -3,45 +3,148 @@
 <head>
     <meta charset="UTF-8">
     <title>{{ movie.title }}</title>
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Trirong">
+    <style>
+        body {
+            font-family: 'Trirong', serif;
+            color: rgb(111, 60, 2);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 20px;
+            margin: 0;
+            background-color: #fcfcfc;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 600px;
+            text-align: center;
+        }
+
+        h1 { font-size: 32px; margin-bottom: 5px; }
+        h2 { font-size: 22px; opacity: 0.8; margin-top: 0; }
+
+        .movie-poster {
+            border-radius: 12px;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+            margin: 20px auto;
+            display: block;
+            max-width: 200px;
+            height: auto;
+        }
+
+        .author-info { font-style: italic; margin-bottom: 20px; }
+
+        button, input[type="submit"], select {
+            font-family: 'Trirong', serif !important;
+            font-size: 18px !important;
+            padding: 8px 16px !important;
+            border-radius: 8px !important;
+            cursor: pointer;
+            transition: 0.3s;
+            margin: 5px;
+            border: none;
+        }
+
+        .btn-edit { background-color: #4CAF50; color: white; }
+        .btn-delete { background-color: #8b0000; color: white; }
+        .btn-send { background-color: green; color: white; }
+
+        select {
+            border: 2px solid green !important;
+            background: white;
+            color: rgb(111, 60, 2);
+        }
+
+        .comments-section {
+            text-align: left;
+            margin-top: 30px;
+            width: 100%;
+        }
+
+        ul { list-style: none; padding: 0; }
+        li {
+            background: white;
+            padding: 12px;
+            border-radius: 8px;
+            margin-bottom: 10px;
+            border-left: 4px solid green;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+        }
+
+        hr { border: 0; height: 1px; background: #ddd; margin: 20px 0; }
+
+        a { color: rgb(111, 60, 2); text-decoration: none; font-weight: bold; }
+        a:hover { text-decoration: underline; }
+
+        .back-link { margin-top: 30px; display: block; font-size: 20px; }
+    </style>
 </head>
 <body>
 
-
+<div class="container">
     <h1>{{ movie.title }}</h1>
-    <h2>{{movie.country}}, {{movie.year}}</h2>
+    <h2>{{ movie.country }}, {{ movie.year }}</h2>
+
     {% if movie.image %}
-        <img src="{{ url_for('static', filename=movie.image.image_path) }}" alt="Movie poster" width="45" height="auto" style="float: left; margin: 15px;">
+        <img src="{{ url_for('static', filename=movie.image.image_path) }}"
+             alt="Movie poster" class="movie-poster">
     {% endif %}
-    <p>Post author: {{ movie.profile.name }}</p>
+
+    <p class="author-info">Post author: {{ movie.profile.name }}</p>
     <hr>
 
     {% if current_user.is_authenticated and movie.profile_id == current_user.profile.id %}
         <div>
-            <a href= "{{ url_for('edit_movie', mid=movie.id)}}">
-                <button type="button">Edit post</button>
+            <a href="{{ url_for('edit_movie', mid=movie.id) }}">
+                <button type="button" class="btn-edit">Edit post</button>
             </a>
 
             <form action="{{ url_for('delete_movie', mid=movie.id) }}" method="post" style="display:inline;">
-                <input type="submit" value="Delete post" onclick="return confirm('Are you sure?');">
+                <input type="submit" class="btn-delete" value="Delete post" onclick="return confirm('Are you sure?');">
             </form>
         </div>
         <hr>
     {% endif %}
 
-    <h3>Comments:</h3>
-    <ul>
-        {% for comment in movie.comments %}
-            <li>[{{comment.created_at}}] {{ comment.profile.name }}: {{ comment.text }}</li>
+    {% if current_user.is_authenticated %}
+        {% if not has_voted %}
+            <form action="{{ url_for('ratings', mid=movie.id) }}" method="POST">
+                <label for="rates">Rate this film!</label><br>
+                <select name="rates" id="rates" required>
+                    <option value="">--Rate--</option>
+                    {% for i in range(1, 11) %}
+                        <option value="{{ i }}">{{ i }}</option>
+                    {% endfor %}
+                </select>
+                <button type="submit" class="btn-send">Send</button>
+            </form>
         {% else %}
-            <li>No comments...</li>
-        {% endfor %}
+            <p><em>You have already rated this film!</em></p>
+        {% endif %}
+    {% else %}
+        <p><a href="{{ url_for('signin') }}">Sign in</a> to rate this film.</p>
+    {% endif %}
 
-        <a href="{{ url_for('create_comment', mid = movie.id) }}">Write a new comment</a>
+    <div class="comments-section">
+        <h3>Comments:</h3>
+        <ul>
+            {% for comment in movie.comments %}
+                <li>
+                    <a href="{{ url_for('edit_comment', cid=comment.id) }}">&#8942;</a>
+                    <small>[{{ comment.created_at }}]</small>
+                    <strong>{{ comment.profile.name }}:</strong> {{ comment.text }}
+                </li>
+            {% else %}
+                <li>No comments...</li>
+            {% endfor %}
+        </ul>
+        <a href="{{ url_for('create_comment', mid=movie.id) }}">Write a new comment</a>
+    </div>
 
-    </ul>
-
-    <br>
-    <a href="{{ url_for('home') }}">Back</a>
+    <a href="{{ url_for('home') }}" class="back-link">Back to the movie list</a>
+</div>
 
 </body>
 </html>

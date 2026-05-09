@@ -1,13 +1,73 @@
+<link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Trirong">
+
+<style>
+    body {
+        font-family: 'Trirong', serif;
+        color: rgb(111, 60, 2);
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        min-height: 100vh;
+        margin: 0;
+        background-color: #f9f9f9;
+    }
+
+    form {
+        text-align: center;
+        width: 100%;
+        max-width: 400px;
+        padding: 10px;
+    }
+
+
+    input {
+        font-family: 'Trirong', serif !important;
+        font-size: 22px !important;
+        color: rgb(111, 60, 2) !important;
+        border: 2px solid green !important;
+        border-radius: 8px !important;
+        padding: 10px 15px !important;
+        margin: 8px auto !important;
+        display: block;
+        width: 100%;
+        box-sizing: border-box;
+    }
+
+    input::placeholder {
+        color: gray !important;
+    }
+
+    input[type="submit"] {
+        background-color: green;
+        color: white !important;
+        cursor: pointer;
+        margin-top: 15px !important;
+        padding: 8px !important;
+        font-size: 20px !important;
+    }
+
+    a {
+        color: rgb(111, 60, 2);
+        text-decoration: none;
+        font-size: 18px;
+    }
+
+    br {
+        display: none;
+    }
+</style>
+
 {% from "_helpers.html" import render_field %}
 
-<form method="post">
-    {{ form.hidden_tag() }}
+<div class="form-container">
+    <form method="post">
+        {{ form.hidden_tag() }}
 
-    {% block content %}
-    {{ render_field(form.username, placeholder="Your username") }}
-    {{ render_field(form.password, placeholder="Your password") }}
-    {% endblock %}
+        {% block content %}
+            {{ render_field(form.username, placeholder="Username") }}
+            {{ render_field(form.password, placeholder="Password") }}
+        {% endblock %}
 
-    {{ form.submit }}
-
-</form>
+        {{ form.submit }}
+    </form>
+</div>
